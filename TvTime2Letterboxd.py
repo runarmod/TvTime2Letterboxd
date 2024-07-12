@@ -41,8 +41,24 @@ def get_watchlist_movies(df, watched_df):
     return watchlist_df[["Title", "Year"]]
 
 
+def to_csv(df: pd.DataFrame, filename: str, batch_size: int = 1900):
+    if len(df) <= batch_size:
+        df.to_csv(filename, index=False)
+        return
+
+    name, ext = filename.rsplit(".", maxsplit=1)
+    for file_nr, _df in enumerate(
+        [df.iloc[i : i + batch_size] for i in range(0, len(df), batch_size)],
+        start=1,
+    ):
+        _df.to_csv(
+            name + f"_{file_nr}.{ext}",
+            index=False,
+        )
+
+
 watched_df = get_watched_movies(df)
-watched_df.to_csv("letterboxd.csv", index=False)
+to_csv(watched_df, "letterboxd.csv")
 
 watchlist_df = get_watchlist_movies(df, watched_df)
-watchlist_df.to_csv("letterboxd_watchlist.csv", index=False)
+to_csv(watchlist_df, "letterboxd_watchlist.csv")
